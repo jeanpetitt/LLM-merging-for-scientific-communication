@@ -16,7 +16,7 @@ Model_MAP = {
     "openai": "gpt-4o-mini",
     "mistral": "mistralai/Mistral-7B-Instruct-v0.3",
     "merged": "yvelos/phi-merge-arithmetic",
-    "phi": "microsoft/Phi-3-mini-4k-instruct"
+    "phi": "microsoft/Phi-3-mini-128k-instruct"
 }
 
 generation_args = {
@@ -77,7 +77,7 @@ def zero_shot_prompting(
 ):
     data = load_json_file(input_path)
     system_prompt = """Generate a comprehensive answer to the given question solely based on the content provided.
-Give the title and description in the english language. Your output should look like this {"title": "title", "summary": "summary"}"""
+Provide the title and summary in the english language. Your output should look like this {"title": "title", "summary": "summary"}"""
     with open(f"results/zero_shot_1{model_type}_{output_path}", 'w') as file:
         start_time = time.time()
         answer_data = []
@@ -98,9 +98,12 @@ Give the title and description in the english language. Your output should look 
                 "text-generation", 
                 model=load_model(model_type), 
                 tokenizer=load_tokenizer(model_type),
+                # model=Model_MAP[model_type],
+                # tokenizer=Model_MAP[model_type],
                 # torch_dtype=torch.float16,
+                # device="cuda"
             )
-            for i, item in enumerate(data[25:]):       
+            for i, item in enumerate(data[37:]):       
                 messages = [
                     {"role": 'system', "content": system_prompt},
                     {"role": "user", "content": item['instruction']},
