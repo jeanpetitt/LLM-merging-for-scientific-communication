@@ -2,10 +2,11 @@ import requests
 from typing import List
 import json
 
-# get document from ask
+# Function to get a document from a question
 def get_document_from_ask(question: List):
     pass
 
+# Retrieve a specific comparison by its ID
 def retrieve_comparison(id):
     headers = {
         'Content-Type': 'application/vnd.orkg.comparison.v2+json;charset=UTF-8',
@@ -19,15 +20,23 @@ def retrieve_comparison(id):
         raise e
 
 
-# TODO Rename this here and in `retrieve_comparison`
+# Extract comparison data with a limit on criteria and contributions
 def _extracted_from_retrieve_comparison_9(url, headers):
     response = requests.get(url, headers=headers)
     result = response.json()
-    # print(result)
-    criteria = "\n".join([f"{i+1}. {item['label']}" for i, item in enumerate(result['data']['predicates'])])
-    contributions = "\n".join([f"{i+1}-{item['label']} extracted from paper entitled: {item['paper_label']}" for i, item in enumerate(result['data']['contributions'])])
+    
+    # Limit contributions to 30 if the number exceeds or equals 30
+    contributions = result['data']['contributions'][:30] if len(result['data']['contributions']) >= 30 else result['data']['contributions']
+    
+    # Limit criteria to 100 if the number exceeds or equals 100
+    criteria = result['data']['predicates'][:100] if len(result['data']['predicates']) >= 100 else result['data']['predicates']
+    
+    # Generate text for criteria and contributions
+    criteria_text = "\n".join([f"{i+1}. {item['label']}" for i, item in enumerate(criteria)])
+    contributions_text = "\n".join([f"{i+1}-{item['label']} extracted from paper entitled: {item['paper_label']}" for i, item in enumerate(contributions)])
+    
     return {
-        'instruction': f"""Here are {len(result['contributions'])} contributions to analyze and compare:\n## Criteria:\n{criteria} \n## Contributions:\n {contributions} \n## Question:\nProvide a concise title and summary of this comparison based on the listed criteria and contributions.""",
+        'instruction': f"""Here are {len(contributions)} contributions to analyze and compare:\n## Criteria:\n{criteria_text} \n## Contributions:\n {contributions_text} \n## Question:\nProvide a concise title and summary of this comparison based on the listed criteria and contributions.""",
         'answer': {
             'title': result['title'],
             'summary': result['description'],
@@ -35,6 +44,7 @@ def _extracted_from_retrieve_comparison_9(url, headers):
         'id': result['id']
     }
 
+# Retrieve multiple comparisons
 def get_comparisons(comparison_ids=None):
     if not comparison_ids:
         url = 'https://orkg.org/api/comparisons'
@@ -58,22 +68,30 @@ def get_comparisons(comparison_ids=None):
                 f.write('\n')
 
 
-# TODO Rename this here and in `get_comparisons`
+# Extract all comparisons with a limit on criteria and contributions
 def _extracted_from_get_comparisons_10(url, headers):
     response = requests.get(url, headers=headers, params={"page": 100})
     results = response.json()['content']
-    # print(results)
+    
     dataset = {}
     data = []
     for result in results:
-                # if result['created_by'] == "07a4c04e-f0ed-407e-a097-b676d5228a40":
-            criteria = "\n".join([f"{i+1}. {item['label']}" for i, item in enumerate(result['data']['predicates'])])
-            contributions = "\n".join([f"{i+1}-{item['label']} extracted from paper entitled: {item['paper_label']}" for i, item in enumerate(result['data']['contributions'])])
-            dataset['instruction'] = f"""Here are {len(result['contributions'])} contributions to analyze and compare:
-            ## Criteria:\n{criteria} \n## Contributions:\n {contributions} \n## Question:\nProvide a concise title and summary of this comparison based on the listed criteria and contributions."""
-            dataset['answer'] = {'title': result['title'], 'summary': result['description']}
-            dataset['id'] = result['id']
-            data.append(dataset)
+        # Limit contributions to 30 if the number exceeds or equals 30
+        contributions = result['data']['contributions'][:30] if len(result['data']['contributions']) >= 30 else result['data']['contributions']
+        
+        # Limit criteria to 100 if the number exceeds or equals 100
+        criteria = result['data']['predicates'][:100] if len(result['data']['predicates']) >= 100 else result['data']['predicates']
+        
+        # Generate text for criteria and contributions
+        criteria_text = "\n".join([f"{i+1}. {item['label']}" for i, item in enumerate(criteria)])
+        contributions_text = "\n".join([f"{i+1}-{item['label']} extracted from paper entitled: {item['paper_label']}" for i, item in enumerate(contributions)])
+        
+        dataset['instruction'] = f"""Here are {len(contributions)} contributions to analyze and compare:
+        ## Criteria:\n{criteria_text} \n## Contributions:\n {contributions_text} \n## Question:\nProvide a concise title and summary of this comparison based on the listed criteria and contributions."""
+        dataset['answer'] = {'title': result['title'], 'summary': result['description']}
+        dataset['id'] = result['id']
+        data.append(dataset)
+    
     print(data)
     print(len(results))
     with open('test.jsonl', 'w') as f:

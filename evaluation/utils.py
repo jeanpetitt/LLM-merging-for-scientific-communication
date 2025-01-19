@@ -84,11 +84,11 @@ def compute_rouge_average(
 if __name__ == "__main__":
     # # Example usage
     reference_path = "test.jsonl"
-    candidate_path = "results/few_shot_openai_output.jsonl"
+    candidate_path = "results/few_shot_phi_output.jsonl"
     rouge_scores = compute_rouge_average(
         reference_path,
         candidate_path,
-        typeG="both"
+        typeG="title"
     )
     print(rouge_scores)
 

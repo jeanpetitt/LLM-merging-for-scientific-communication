@@ -73,12 +73,11 @@ def zero_shot_prompting(
     input_path, 
     output_path,
     model_type: MODEL,
-    tokenizer=False, 
 ):
     data = load_json_file(input_path)
     system_prompt = """Generate a comprehensive answer to the given question solely based on the content provided.
 Provide the title and summary in the english language. Your output should look like this {"title": "title", "summary": "summary"}"""
-    with open(f"results/zero_shot_1{model_type}_{output_path}", 'w') as file:
+    with open(f"results/zero_shot{model_type}_{output_path}", 'w') as file:
         start_time = time.time()
         answer_data = []
         if model_type == 'openai':    
@@ -103,7 +102,7 @@ Provide the title and summary in the english language. Your output should look l
                 # torch_dtype=torch.float16,
                 # device="cuda"
             )
-            for i, item in enumerate(data[37:]):       
+            for i, item in enumerate(data[:]):       
                 messages = [
                     {"role": 'system', "content": system_prompt},
                     {"role": "user", "content": item['instruction']},
@@ -139,14 +138,14 @@ def few_shot_prompting(
             "text-generation", 
             model=load_model(model_type), 
             tokenizer=load_tokenizer(model_type),
-            device="cuda", 
-            torch_dtype=torch.float16,
+            # device="cuda", 
+            # torch_dtype=torch.float16,
         )
-    with open(f"results/few_shot_{model_type}_1{output_path}", 'w') as file:
-        for item in data[:]:
+    with open(f"results/few_shot_1_{model_type}_{output_path}", 'w') as file:
+        for item in data[48:]:
             sample = random.choice(data)
             system_prompt = f"""Generate a comprehensive answer to the given question solely based on the content provided.
-Give the title and description in the english language. Your output should be a json output like this {{"title": "title", "summary": "summary"}}".\nHere is an example: {sample['instruction']} \n#answer\n {{"title":"{sample['answer']['title']}", "summary": "{sample['answer']['summary']}"}}"""
+Provide the title and description in the english language. Your output should be a json output like this {{"title": "title", "summary": "summary"}}".\nHere is an example: {sample['instruction']} \n#answer\n {{"title":"{sample['answer']['title']}", "summary": "{sample['answer']['summary']}"}}"""
             # print(system_prompt)
             if model_type == 'openai':
                 chat_response = apply_chat_template(
@@ -176,7 +175,6 @@ Give the title and description in the english language. Your output should be a 
     print(f"Inference time: {execution_time:.4f} secondes")
 
     return answer_data
-
 
 # TODO Rename this here and in `few_shot_prompting`
 def _extracted_from_prompting(item, output, file, answer_data):
@@ -258,15 +256,14 @@ def apply_chat_template(
 
 
 if __name__ == '__main__':
-    # few_shot_prompting(
-    #     'test.jsonl', 
-    #     "output.jsonl",
-    #     'merged',
-    #     True
-    # )
-    zero_shot_prompting(
+    few_shot_prompting(
         'test.jsonl', 
         "output.jsonl",
         'phi',
         True
     )
+    # zero_shot_prompting(
+    #     'test.jsonl', 
+    #     "output.jsonl",
+    #     'merged',
+    # )
