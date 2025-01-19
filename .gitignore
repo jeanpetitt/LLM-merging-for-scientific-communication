@@ -1,1 +1,6 @@
 venv
+merge
+.vscode
+__pycache__
+mergekit/
+.env
