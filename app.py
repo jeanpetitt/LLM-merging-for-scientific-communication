@@ -257,13 +257,13 @@ def apply_chat_template(
 
 if __name__ == '__main__':
     few_shot_prompting(
-        'test.jsonl', 
+        'dataset/test.jsonl', 
         "output.jsonl",
         'phi',
         True
     )
     # zero_shot_prompting(
-    #     'test.jsonl', 
+    #     'dataset/test.jsonl', 
     #     "output.jsonl",
     #     'merged',
     # )

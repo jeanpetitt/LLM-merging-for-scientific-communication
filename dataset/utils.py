@@ -94,7 +94,7 @@ def _extracted_from_get_comparisons_10(url, headers):
     
     print(data)
     print(len(results))
-    with open('test.jsonl', 'w') as f:
+    with open('dataset/test.jsonl', 'w') as f:
         for item in data:
             json.dump(item, f)
             f.write('\n')
